@@ -12,10 +12,11 @@ from tensorflow.keras import backend as K
 from collections import deque
 
 class DQNAgent():
-    def __init__(self, states, actions, learning_rate, gamma, epsilon, epsilon_min, epsilon_decay,max_memory=100000):
+    def __init__(self, states, actions, learning_rate, gamma, epsilon, epsilon_min, epsilon_decay):
+        self.max_memory=1000
         self.nStates  = states
         self.nActions = actions
-        self.memory = deque([], maxlen=max_memory)
+        self.memory = deque([], maxlen=self.max_memory)
         self.learning_rate = learning_rate
         self.gamma = gamma
         #Explore/Exploit
@@ -126,7 +127,9 @@ class DQNAgent():
         #Decay Epsilon
         if self.epsilon > self.epsilon_min:
             self.epsilon *= self.epsilon_decay
-        self.memory = deque([], maxlen=max_memory)
+            
+        # Relieve memory usage
+        self.memory = deque([], maxlen=self.max_memory)
 
     def load(self, name):
         self.model.load_weights(name)
@@ -145,8 +148,7 @@ agent = DQNAgent(states         = 10,
                  gamma          = 0.99, 
                  epsilon        = 1, 
                  epsilon_min    = 0.001, 
-                 epsilon_decay  = 0.995,
-                 max_memory=agent_max_memory) 
+                 epsilon_decay  = 0.995) 
 
 
 
@@ -155,8 +157,8 @@ env_config = {
     'gui': True,
     #'env_name': 'default',
     # 'env_name': 'empty',
-    'env_name': 'level1',
-    # 'env_name': 'level2',
+    #'env_name': 'level1',
+     'env_name': 'level2',
     # 'env_name': 'random',
     # 'camera_mode': 'centered',
     # 'env_flipped': False,
@@ -195,23 +197,25 @@ def start_agent_traning(view: bool,agentName: str):
     
     while True:
         try:
+            
             action = agent.action(state)
 
             
             if view : 
                 env.render()
                 env.clock.tick(120)
+                pygame.event.get()
                 
 
             nstate, reward, done, info = env.step(action)
             nstate = np.reshape(nstate,[1,10])
             
+            print(action)
             agent.memorize(state,action,reward,nstate,done)
             
             state = nstate
 
             if done:
-                print(f"La mémoire de l'agent est complétée à : {(len(agent.memory)/agent_max_memory)*100}%")
                 # Remember program logic
                 env.reset()
                 agent.experience_replay(100)

@@ -192,7 +192,7 @@ while run:
                 dqn.model.save("fusee.h5")
             if event.key == pygame.K_ESCAPE:
                 run = False
-    env.clock.tick(30)
+    env.clock.tick(120)
     get_event = pygame.event.get()
     event_to_action(get_event)
     #get_pressed = list(pygame.key.get_pressed()) #utiliser le clavier
@@ -216,7 +216,7 @@ while run:
         rewards.append(total_reward)
         epsilons.append(dqn.epsilon)
         env.reset()
-        print(total_reward)
+
     if len(dqn.memory) > batch_size():
         dqn.experience_replay(batch_size)
         
