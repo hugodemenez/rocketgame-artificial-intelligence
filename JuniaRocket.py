@@ -12,10 +12,10 @@ from tensorflow.keras import backend as K
 from collections import deque
 
 class DQNAgent():
-    def __init__(self, states, actions, learning_rate, gamma, epsilon, epsilon_min, epsilon_decay):
+    def __init__(self, states, actions, learning_rate, gamma, epsilon, epsilon_min, epsilon_decay,max_memory=100000):
         self.nStates  = states
         self.nActions = actions
-        self.memory = deque([], maxlen=10000000)
+        self.memory = deque([], maxlen=max_memory)
         self.learning_rate = learning_rate
         self.gamma = gamma
         #Explore/Exploit
@@ -56,6 +56,7 @@ class DQNAgent():
         # G : [0,1]
         # D : [0,-1]
         # Nothing : [0,0]
+        # Cumul : Acc/Gauche [1,1] - Acc/Droite [1,-1] - Rec/Gauche [-1,1] - Rec/Droite [-1,-1]
         if np.argmax(actions)==0:
             return [1,0]
         if np.argmax(actions)==1:
@@ -66,6 +67,15 @@ class DQNAgent():
             return [0,-1]
         if np.argmax(actions)==4:
             return [0,0]
+        if np.argmax(actions)==5:
+            return [1,1]
+        if np.argmax(actions)==6:
+            return [1,-1]
+        if np.argmax(actions)==7:
+            return [-1,1]
+        if np.argmax(actions)==8:
+            return [-1,-1]
+
 
     def memorize(self, state, action, reward, nstate, done):
         #Store the experience in memory
@@ -116,6 +126,7 @@ class DQNAgent():
         #Decay Epsilon
         if self.epsilon > self.epsilon_min:
             self.epsilon *= self.epsilon_decay
+        self.memory = deque([], maxlen=max_memory)
 
     def load(self, name):
         self.model.load_weights(name)
@@ -126,15 +137,16 @@ class DQNAgent():
         #print("Model Saved.")
 
 
-
+agent_max_memory = 1000
 
 agent = DQNAgent(states         = 10, 
-                 actions        = 5,
+                 actions        = 9,
                  learning_rate  = 0.005, 
                  gamma          = 0.99, 
-                 epsilon        = 0.05, 
+                 epsilon        = 1, 
                  epsilon_min    = 0.001, 
-                 epsilon_decay  = 0.995) 
+                 epsilon_decay  = 0.995,
+                 max_memory=agent_max_memory) 
 
 
 
@@ -192,7 +204,6 @@ def start_agent_traning(view: bool,agentName: str):
                 
 
             nstate, reward, done, info = env.step(action)
-            
             nstate = np.reshape(nstate,[1,10])
             
             agent.memorize(state,action,reward,nstate,done)
@@ -200,10 +211,10 @@ def start_agent_traning(view: bool,agentName: str):
             state = nstate
 
             if done:
-                print(env.rocket.reward_total)
+                print(f"La mémoire de l'agent est complétée à : {(len(agent.memory)/agent_max_memory)*100}%")
                 # Remember program logic
                 env.reset()
-                agent.experience_replay(500)
+                agent.experience_replay(100)
                 try:
                     agent.save("hugodemenez")
                 except:
