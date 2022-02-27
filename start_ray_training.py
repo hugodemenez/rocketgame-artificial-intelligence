@@ -6,8 +6,8 @@ tune.run(
     "SAC", # reinforced learning agent
     name = "Training1",
     # to resume training from a checkpoint, set the path accordingly:
-    resume = True, # you can resume from checkpoint
-    restore = r'.\checkpoint',
+    resume = False, # you can resume from checkpoint
+    restore = r'checkpoint',
     checkpoint_freq = 100,
     checkpoint_at_end = True,
     local_dir = r'./ray_results/',
@@ -18,8 +18,8 @@ tune.run(
         "env_config":{
             "max_steps": 1000,
             "export_frames": False,
-            "export_states": False,
-            # "reward_mode": "continuous",
+            "export_states": True,
+            "reward_mode": "continuous",
             # "env_flipped": True,
             # "env_flipmode": True,
         }

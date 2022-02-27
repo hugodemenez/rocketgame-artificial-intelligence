@@ -1,8 +1,8 @@
 import gym, json
-from ray.rllib import rollout
+from ray.rllib import evaluate
 from ray.tune.registry import register_env
 
-from rocket_gym import RocketMeister
+from rocket_gym import RocketMeister10
 class MultiEnv(gym.Env):
     def __init__(self, env_config):
         self.env = RocketMeister(env_config)
@@ -17,7 +17,7 @@ class MultiEnv(gym.Env):
 register_env("rocketmeister", lambda c: MultiEnv(c))
 
 # path to checkpoint
-checkpoint_path = r'.\ray_results\Example\SAC_RocketMeister_ea992_00000_0_2020-11-11_22-07-33\checkpoint_3900\checkpoint-3900'
+checkpoint_path = r'/checkpoint'
 
 string = ' '.join([
     checkpoint_path,
@@ -38,7 +38,7 @@ config = {
     },
 }
 config_json = json.dumps(config)
-parser = rollout.create_parser()
+parser = evaluate.create_parser()
 args = parser.parse_args(string.split() + ['--config', config_json])
 
 # ──────────────────────────────────────────────────────────────────────────
@@ -51,4 +51,4 @@ args = parser.parse_args(string.split() + ['--config', config_json])
 # _register_all()
 # ──────────────────────────────────────────────────────────────────────────
 
-rollout.run(args, parser)
+evaluate.run(args, parser)

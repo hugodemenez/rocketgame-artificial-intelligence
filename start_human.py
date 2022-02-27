@@ -69,6 +69,7 @@ while run:
     event_to_action(get_event)
     get_pressed = list(pygame.key.get_pressed())
     action = pressed_to_action(get_pressed)
+    print(action)
     env.step(action=action)
     env.render()
 pygame.quit()
