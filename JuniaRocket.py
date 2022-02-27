@@ -13,7 +13,7 @@ from collections import deque
 
 class DQNAgent():
     def __init__(self, states, actions, learning_rate, gamma, epsilon, epsilon_min, epsilon_decay):
-        self.max_memory=1000
+        self.max_memory=2500 # If there is a lot of actions (it can grow fast but we only remember the first max_memory actions)
         self.nStates  = states
         self.nActions = actions
         self.memory = deque([], maxlen=self.max_memory)
@@ -120,6 +120,7 @@ class DQNAgent():
         x_reshape = np.array(x).reshape(batch_size,self.nStates)
         y_reshape = np.array(y)
         epoch_count = 1 #Epochs is the number or iterations
+
         hist = self.model.fit(x_reshape, y_reshape, epochs=epoch_count, verbose=0)
         #Graph Losses
         for i in range(epoch_count):
@@ -128,8 +129,6 @@ class DQNAgent():
         if self.epsilon > self.epsilon_min:
             self.epsilon *= self.epsilon_decay
             
-        # Relieve memory usage
-        self.memory = deque([], maxlen=self.max_memory)
 
     def load(self, name):
         self.model.load_weights(name)
@@ -140,7 +139,7 @@ class DQNAgent():
         #print("Model Saved.")
 
 
-agent_max_memory = 1000
+
 
 agent = DQNAgent(states         = 10, 
                  actions        = 9,
@@ -148,7 +147,7 @@ agent = DQNAgent(states         = 10,
                  gamma          = 0.99, 
                  epsilon        = 1, 
                  epsilon_min    = 0.001, 
-                 epsilon_decay  = 0.995) 
+                 epsilon_decay  = 0.9995) 
 
 
 
@@ -210,15 +209,18 @@ def start_agent_traning(view: bool,agentName: str):
             nstate, reward, done, info = env.step(action)
             nstate = np.reshape(nstate,[1,10])
             
-            print(action)
             agent.memorize(state,action,reward,nstate,done)
             
             state = nstate
 
             if done:
-                # Remember program logic
+                import os
+                clear = lambda: os.system('clear')
+                clear()
+                print(f"{round((1-agent.epsilon)*100,2)}%")
                 env.reset()
-                agent.experience_replay(100)
+                # Remember program logic from sample of memory (sample of batch size from memory) (what we have done so far)
+                agent.experience_replay(40)
                 try:
                     agent.save("hugodemenez")
                 except:
